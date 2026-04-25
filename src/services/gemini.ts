@@ -1,56 +1,54 @@
-import { GoogleGenAI } from "@google/genai";
 import { Message, Topic } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const API_URL = "http://localhost:5000/api";
 
 export async function explainConcept(topic: string, history: Message[]) {
-  const response = await ai.models.generateContent({
-    model: "gemini-3.1-pro-preview",
-    contents: [
-      ...history.map(m => ({ role: m.role === 'user' ? 'user' : 'model', parts: [{ text: m.content }] })),
-      { role: 'user', parts: [{ text: `Explain the following topic in a way that is easy to understand: ${topic}. Use analogies and focus on core principles.` }] }
-    ],
-    config: {
-      systemInstruction: "You are Lumina, an expert mentor. You help users learn concepts by explaining them clearly, using metaphors, and breaking down complex ideas. Encourage the user to ask questions.",
-    }
-  });
-  return response.text || "I'm sorry, I couldn't generate an explanation.";
+  try {
+    const response = await fetch(`${API_URL}/explain`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ topic, history })
+    });
+
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    return data.explanation || "I'm sorry, I couldn't generate an explanation.";
+  } catch (error) {
+    console.error("Error explaining concept:", error);
+    return "Error generating explanation. Is the server running?";
+  }
 }
 
 export async function generateRoadmap(goal: string): Promise<Topic[]> {
-  const response = await ai.models.generateContent({
-    model: "gemini-3.1-pro-preview",
-    contents: `Generate a learning roadmap for the goal: "${goal}". 
-    Format the response as a JSON array of objects with the following structure:
-    [{ "id": "uuid", "title": "Topic Name", "description": "Brief description", "order": 1 }]
-    Include 5-7 progressive topics.`,
-    config: {
-      responseMimeType: "application/json",
-    }
-  });
-
   try {
-    const data = JSON.parse(response.text || "[]");
-    return data.map((t: any, index: number) => ({
-      ...t,
-      status: index === 0 ? 'available' : 'locked',
-      order: index + 1
-    }));
-  } catch (e) {
-    console.error("Failed to parse roadmap", e);
+    const response = await fetch(`${API_URL}/roadmap`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ goal })
+    });
+
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    return data.roadmap || [];
+  } catch (error) {
+    console.error("Error generating roadmap:", error);
     return [];
   }
 }
 
 export async function generateQuiz(topic: Topic): Promise<string> {
-  const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents: `Create a short, interactive quiz (3 questions) for the topic: "${topic.title}".
-    Focus on conceptual understanding. Use the person's previous chat history if provided.
-    Format your response in Markdown.`,
-    config: {
-      systemInstruction: "You are an adaptive tutor. Create quizzes that test depth of understanding, not just rote memorization.",
-    }
-  });
-  return response.text || "I'm having trouble creating a quiz right now.";
+  try {
+    const response = await fetch(`${API_URL}/quiz`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ topic })
+    });
+
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    return data.quiz || "I'm having trouble creating a quiz right now.";
+  } catch (error) {
+    console.error("Error generating quiz:", error);
+    return "Error generating quiz. Is the server running?";
+  }
 }
