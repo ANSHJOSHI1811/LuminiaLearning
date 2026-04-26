@@ -1,6 +1,6 @@
 {
-  "name": "Lumina Learning Companion",
-  "description": "An intelligent AI mentor that personalizes your learning path, adapts to your pace, and uses active recall to ensure mastery.",
+  "name": "Navigate",
+  "description": "Navigate your skill. An intelligent AI mentor that personalizes your learning path, adapts to your pace, and uses active recall to ensure mastery.",
   "requestFramePermissions": [],
   "majorCapabilities": ["AI-powered tutoring", "Adaptive roadmaps", "Progress tracking"]
 }
