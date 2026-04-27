@@ -1,6 +1,9 @@
-import { Compass } from 'lucide-react';
+import { Compass, LogOut } from 'lucide-react';
+import { useAuth } from './AuthProvider';
 
 export function Navbar() {
+  const { user, signOut } = useAuth();
+
   return (
     <nav className="h-24 flex items-center justify-between px-8 md:px-32 sticky top-0 bg-white/80 backdrop-blur-xl z-50 border-b border-slate-50">
       <div className="flex items-center gap-2.5">
@@ -16,9 +19,22 @@ export function Navbar() {
             {item}
           </button>
         ))}
-        <button className="px-6 py-2.5 bg-slate-900 text-white rounded-full text-[10px] font-black tracking-widest hover:bg-accent hover:scale-105 transition-all shadow-lg shadow-slate-200">
-          GET STARTED
-        </button>
+        
+        {user && (
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <img src={user.photoURL || ''} alt={user.displayName || ''} className="w-8 h-8 rounded-full border border-slate-100" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-900">{user.displayName?.split(' ')[0]}</span>
+            </div>
+            <button 
+              onClick={signOut}
+              className="p-2 hover:bg-slate-50 rounded-full text-slate-400 hover:text-red-500 transition-all"
+              title="Sign Out"
+            >
+              <LogOut size={16} />
+            </button>
+          </div>
+        )}
       </div>
     </nav>
   );

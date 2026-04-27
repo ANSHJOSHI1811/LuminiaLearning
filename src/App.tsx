@@ -2,8 +2,11 @@ import { useState } from 'react';
 import { LearningState } from './types';
 import { HomePage } from './pages/Home';
 import { CoursePage } from './pages/Course';
+import { AuthProvider, useAuth } from './components/AuthProvider';
+import { LoginPage } from './pages/Login';
 
-export default function App() {
+function AppContent() {
+  const { user, loading } = useAuth();
   const [state, setState] = useState<LearningState>({
     goal: '',
     assessment: null,
@@ -17,6 +20,19 @@ export default function App() {
   const [step, setStep] = useState<'goal' | 'assessment' | 'preferences' | 'course'>('goal');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [activeView, setActiveView] = useState<'roadmap' | 'content' | 'quiz'>('roadmap');
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6 text-center">
+        <div className="w-12 h-12 border-2 border-slate-100 border-t-slate-900 rounded-full animate-spin mb-4" />
+        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Neutralizing Latency...</p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <LoginPage />;
+  }
 
   const markTopicMastered = (topicId: string) => {
     setState(prev => {
@@ -67,5 +83,13 @@ export default function App() {
         />
       )}
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
